@@ -4,6 +4,11 @@ from pathlib import Path
 from decouple import config
 import dj_database_url
 import os
+from dotenv import load_dotenv
+
+# Load .env
+load_dotenv()
+
 
 # -------------------------------------------------
 # BASE DIR
@@ -13,10 +18,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # -------------------------------------------------
 # SECURITY
 # -------------------------------------------------
-SECRET_KEY = config("SECRET_KEY", default="dev-secret-key")
-DEBUG = config("DEBUG", default=True, cast=bool)
-ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="127.0.0.1,.herokuapp.com").split(",")
-
+# SECRET_KEY = config("SECRET_KEY", default="dev-secret-key")
+# DEBUG = config("DEBUG", default=True, cast=bool)
+# ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="127.0.0.1,.herokuapp.com").split(",")
+SECRET_KEY = os.getenv("SECRET_KEY")
+DEBUG = os.getenv("DEBUG", "False") == "True"
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")
 # -------------------------------------------------
 # INSTALLED APPS
 # -------------------------------------------------
@@ -72,9 +79,10 @@ WSGI_APPLICATION = "iot_project.wsgi.application"
 # DATABASE (External MySQL via DATABASE_URL)
 # -------------------------------------------------
 DATABASES = {
-    "default": dj_database_url.config(
-        default=config("DATABASE_URL"), conn_max_age=600
-    )
+    # "default": dj_database_url.config(
+        # default=config("DATABASE_URL"), conn_max_age=600
+       "default": dj_database_url.parse(os.getenv("DATABASE_URL"))
+    
 }
 
 # -------------------------------------------------

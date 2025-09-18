@@ -1,0 +1,21 @@
+# Python cache and venv
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+venv/
+
+# Local database
+db.sqlite3
+
+# IDE/editor files
+*.log
+*.DS_Store
+*.idea/
+.vscode/
+
+# Environment variables
+.env
+
+# Large JDK / binaries
+iot_api/oracleJdk-24/
