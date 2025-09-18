@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IoT Multi-Level Dashboard</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+body { margin:0; padding-top:70px; display:flex; }
+.navbar { background: linear-gradient(90deg, #0d6efd, #0a58ca); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+.navbar .nav-link { color:#fff !important; }
+.sidebar { width:260px; background:#f8f9fa; border-right:1px solid #dee2e6; padding:20px; position:fixed; top:70px; bottom:0; display:flex; flex-direction:column; overflow-y:auto; }
+.sidebar h5 { font-weight:600; margin-bottom:15px; }
+.sidebar .form-select { margin-bottom:15px; border-radius:8px; }
+.sidebar .summary-card { min-height:60px; padding:2px 4px; margin-bottom:10px; font-size:0.8rem; display:flex; flex-direction:column; justify-content:center; align-items:center; border-radius:12px; color:#fff; }
+.sidebar .summary-card i { font-size:1.4rem; margin-bottom:4px; }
+.sidebar .summary-card h6 { font-size:0.85rem; margin-bottom:2px; }
+.sidebar .summary-card p { font-size:0.9rem; margin:0; font-weight:600; }
+
+.content { margin-left:260px; padding:20px; flex:1; }
+
+#deviceTypeCards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  justify-content: center;
+   margin-top: 50px;  
+}
+.device-type-card {
+  flex: 1 1 calc(33.33% - 10px); /* 3 cards per row, gap adjust */
+  max-width: calc(33.33% - 10px);
+  height: 120px;
+  background: linear-gradient(135deg,#0d6efd,#6610f2);
+  color:white;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  border-radius:12px;
+  box-shadow:0 4px 12px rgba(0,0,0,0.15);
+  cursor:pointer;
+  transition:0.3s;
+}
+.device-type-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+}
+.device-type-card.disabled {
+  background: #e0e0e0 !important;
+  color: #888 !important;
+  cursor: not-allowed;
+}
+.device-center {
+  display: flex;
+  justify-content: center;  /* horizontal center */
+  margin-top: 20px;         /* optional spacing */
+}
+.device-card {
+  padding: 10px;
+  border-radius: 12px;
+  color: white;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  margin-bottom: 10px;
+  max-width: 300px;         /* keeps it from spanning full width */
+  width: 100%;              /* lets it shrink/grow up to max */
+}
+.device-card.bg-success {
+  background: #fff;
+  border: 2px solid #28a745;   /* thin green border only */
+  color: #000;
+  min-height: 60px;
+  max-width: 400px;
+}
+.device-card.bg-danger {
+  background: #fff;
+  border: 2px solid #dc3545;   /* thin red border */
+  color: #000;
+  min-height: 60px;
+  max-width: 400px;
+}
+#deviceDetailsContainer { display:none; }
+#deviceList .device-card { width:100%; margin-bottom:8px; }
+#alarmLog tr td { vertical-align:middle; }
+</style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+<div class="container-fluid">
+  <a class="navbar-brand" href="#">IoT Dashboard</a>
+  <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+    <ul class="navbar-nav">
+      <li class="nav-item"><a class="nav-link" href="#" onclick="logout()">Logout</a></li>
+    </ul>
+  </div>
+</div>
+</nav>
+
+<div class="sidebar">
+<h5>Filters</h5>
+<select id="organizationSelect" class="form-select mb-3"><option value="">Select Organization</option></select>
+<select id="centreSelect" class="form-select mb-4"><option value="">Select Centre</option></select>
+
+<h5>Summary</h5>
+<div id="summaryCards">
+  <div class="summary-card bg-primary text-center mb-3">
+    <i class="bi bi-hdd-network"></i><h6>Total Devices</h6><p id="totalDevices" class="fs-5 fw-bold">0</p>
+  </div>
+  <div class="summary-card bg-success text-center mb-3">
+    <i class="bi bi-check-circle"></i><h6>Active Devices</h6><p id="activeDevices" class="fs-5 fw-bold">0</p>
+  </div>
+  <div class="summary-card bg-danger text-center mb-3">
+    <i class="bi bi-x-circle"></i><h6>Offline Devices</h6><p id="offlineDevices" class="fs-5 fw-bold">0</p>
+  </div>
+</div>
+</div>
+
+<div class="content">
+<div id="deviceTypeCards" class="d-flex flex-wrap gap-3"></div>
+
+<div id="deviceDetailsContainer">
+<button class="btn btn-sm btn-secondary mb-3" onclick="backToDashboard()">← Back</button>
+<h4 id="deviceTypeTitle"></h4>
+
+<div id="deviceList" class="mb-3"></div>
+<!-- Graph + Live Info Section -->
+<div style="max-width:700px;margin:auto;display:flex;gap:15px;align-items:flex-start;">
+  
+  <!-- Left small info box -->
+<div style="
+     flex:0 0 150px;
+     display:flex;
+     flex-direction:column;
+     gap:10px;
+     margin-left:-200px;   /* 👈 pull the whole column left */
+">
+  <div style="background:#0d6efd;color:#fff;border-radius:10px;padding:8px;text-align:center;">
+    <h6 style="font-size:0.8rem;margin-bottom:4px;">Current Temp</h6>
+    <p id="currentTemp" class="fs-6 fw-bold">0 °C</p>
+  </div>
+
+  <div style="background:#dc3545;color:#fff;border-radius:10px;padding:8px;text-align:center;">
+    <h6 style="font-size:0.8rem;margin-bottom:4px;">Total Alarms (24h)</h6>
+    <p id="alarm24h" class="fs-6 fw-bold">0</p>
+  </div>
+</div>
+
+  <!-- Right: Graph -->
+  <div style="flex:1;background:#fff;border-radius:15px;box-shadow:0 4px 15px rgba(0,0,0,0.1);padding:15px;">
+    <canvas id="deviceGraph" style="max-height:300px;"></canvas>
+  </div>
+</div>
+
+<h5 class="mt-4 d-flex justify-content-between align-items-center">
+  Alarm Log <span class="badge bg-danger" id="activeAlarmCount">0</span>
+</h5>
+<input type="text" id="alarmSearch" class="form-control mb-2" placeholder="Search alarms...">
+<table class="table table-striped">
+<thead><tr><th>Device</th><th>Alarm</th><th>Time</th><th>Status</th></tr></thead>
+<tbody id="alarmLog"></tbody>
+</table>
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const API = {
+  masterorganization:"http://127.0.0.1:8000/api/masterorganization/",
+  mastercentre:"http://127.0.0.1:8000/api/mastercentre/",
+  devicecategory: "http://127.0.0.1:8000/api/devicecategory/",
+  masterDevices:"http://127.0.0.1:8000/api/masterdevice/",
+  devicereadinglog:"http://127.0.0.1:8000/api/devicereadinglog/",
+  devicealarmlog:"http://127.0.0.1:8000/api/devicealarmlog/"
+};
+
+let centreData=[], allDevices=[], allCategories=[], currentCentreId=null;
+
+async function loadOrganizations(){
+  try{
+    const res = await fetch(API.masterorganization);
+    const orgs = await res.json();
+    const orgSelect=document.getElementById("organizationSelect");
+    orgSelect.innerHTML='<option value="">Select Organization</option>';
+    orgs.forEach(o=>orgSelect.innerHTML+=`<option value="${o.ORGANIZATION_ID}">${o.ORGANIZATION_NAME}</option>`);
+  }catch(err){ console.error(err); }
+}
+
+async function loadCentres(orgId){
+  const centreSelect=document.getElementById("centreSelect");
+  centreSelect.innerHTML='<option value="">Select Centre</option>';
+  if(!orgId) return;
+  try{
+    if(!centreData.length){
+      const res=await fetch(API.mastercentre);
+      centreData=await res.json();
+    }
+    centreData.filter(c=>c.ORGANIZATION_ID==orgId)
+      .forEach(c=>centreSelect.innerHTML+=`<option value="${c.CENTRE_ID}">${c.CENTRE_NAME}</option>`);
+  }catch(err){ console.error(err); }
+}
+
+async function loadDevices(centreId){
+  currentCentreId=centreId;
+  try{
+    const res = await fetch(API.masterDevices);
+    allDevices=(await res.json()).filter(d=>d.CENTRE_ID==centreId);
+    const catRes = await fetch(API.devicecategory);
+    allCategories = await catRes.json();
+    updateSummary();
+    showCategoryCards();
+  }catch(err){ console.error(err); }
+}
+
+function updateSummary(){
+  const total = allDevices.length;
+  const active = allDevices.filter(d => d.status?.toLowerCase() === "active").length;
+  document.getElementById("totalDevices").textContent = total;
+  document.getElementById("activeDevices").textContent = active;
+  document.getElementById("offlineDevices").textContent = total - active;
+}
+
+function showCategoryCards(){
+  document.getElementById("deviceDetailsContainer").style.display="none";
+  const container = document.getElementById("deviceTypeCards");
+  container.innerHTML = "";
+
+  allCategories.forEach(cat => {
+    const devicesOfCat = allDevices.filter(d => d.CATEGORY_ID === cat.CATEGORY_ID);
+    const count = devicesOfCat.length;
+
+    const card = document.createElement("div");
+    card.className = "device-type-card";
+
+    // Agar ye category 'Refricheck 1', 'VOC1', ya 'Refricheck 2' hai to light / disabled style
+    if([].includes(cat.CATEGORY_NAME)){
+      card.innerHTML = `<h6>${cat.CATEGORY_NAME}</h6>`; // Count / temp hide
+      card.classList.add('disabled');
+    } else {
+      card.innerHTML = `<h6>${cat.CATEGORY_NAME}</h6><strong>${count}</strong>`;
+      if(count > 0){
+        card.onclick = () => openDeviceDashboard(cat.CATEGORY_ID, cat.CATEGORY_NAME);
+      } else {
+        card.classList.add('disabled');
+      }
+    }
+
+    container.appendChild(card);
+  });
+}
+
+async function openDeviceDashboard(categoryId){
+  document.getElementById("deviceTypeCards").innerHTML="";
+  document.getElementById("deviceDetailsContainer").style.display="block";
+
+  const category = allCategories.find(c => c.CATEGORY_ID === categoryId);
+  const typeName = category?.CATEGORY_NAME || categoryId;
+  document.getElementById("deviceTypeTitle").textContent = typeName;
+
+  const devices = allDevices.filter(d => d.CATEGORY_ID === categoryId);
+  const deviceList=document.getElementById("deviceList");
+  deviceList.innerHTML="";
+  devices.forEach(d=>{
+    const temp=parseFloat(d.reading||0).toFixed(2);
+     const color=temp>70?'bg-danger':'bg-success';
+    const div=document.createElement("div");
+    div.className="device-card "+color;
+    div.innerHTML=`<h6>${d.DEVICE_NAME}</h6><p>${temp} °C</p>`;
+    deviceList.appendChild(div);
+  });
+
+  // Current Temp
+  const currentTemp = devices.length ? devices[0].reading : 0;
+  document.getElementById("currentTemp").textContent = parseFloat(currentTemp).toFixed(2) + " °C";
+
+  // Graph data
+  const readingsRes = await fetch(API.devicereadinglog+`?centre=${currentCentreId}&category=${categoryId}`);
+  const readingsData = await readingsRes.json();
+  const timestamps = readingsData.map(r => r.timestamp);
+  const readings = readingsData.map(r => parseFloat(r.value));
+
+  const ctx = document.getElementById('deviceGraph').getContext('2d');
+  if(window.deviceChart) window.deviceChart.destroy();
+
+  const lineGradient = ctx.createLinearGradient(0,0,700,0);
+  lineGradient.addColorStop(0,"#42a5f5");
+  lineGradient.addColorStop(0.5,"#66bb6a");
+  lineGradient.addColorStop(1,"#ff7043");
+
+  const fillGradient = ctx.createLinearGradient(0,0,0,400);
+  fillGradient.addColorStop(0,"rgba(66,165,245,0.3)");
+  fillGradient.addColorStop(1,"rgba(66,165,245,0)");
+
+  window.deviceChart = new Chart(ctx,{
+    type:'line',
+    data:{ labels:timestamps, datasets:[{ label:'🌡 Temperature', data:readings, borderColor:lineGradient, backgroundColor:fillGradient, fill:true, tension:0.35, borderWidth:3, pointRadius:5, pointHoverRadius:7, pointBackgroundColor:"#fff", pointBorderColor:lineGradient, pointBorderWidth:2 }]},
+    options:{ responsive:true, maintainAspectRatio:false, animation:{duration:1200,easing:"easeInOutQuart"}, plugins:{legend:{display:true,labels:{font:{size:14,weight:"bold"},color:"#333"}}, tooltip:{backgroundColor:"rgba(0,0,0,0.8)", titleColor:"#fff", bodyColor:"#fff", callbacks:{label: ctx=>` ${ctx.parsed.y} °C`}}}, scales:{x:{grid:{color:"rgba(0,0,0,0.05)"},ticks:{font:{size:12},color:"#444"}}, y:{beginAtZero:true,min:0,max:40,ticks:{stepSize:5,font:{size:12},color:"#444"},grid:{color:"rgba(0,0,0,0.05)"}}}}
+  });
+
+  // 24hr alarms
+  const alarmsRes = await fetch(API.devicealarmlog+`?centre=${currentCentreId}&category=${categoryId}`);
+  let alarms = await alarmsRes.json();
+  const now = new Date();
+  const last24hAlarms = alarms.filter(a=>{
+    const alarmTime = new Date(a.ALARM_DATE+" "+a.ALARM_TIME);
+    return (now - alarmTime) <= 24*60*60*1000;
+  }).length;
+  document.getElementById("alarm24h").textContent = last24hAlarms;
+
+  // Alarm Log
+  const alarmBody = document.getElementById("alarmLog");
+  alarmBody.innerHTML="";
+  let activeCount=0;
+  alarms.forEach(a=>{
+    const device = allDevices.find(d => d.DEVICE_ID === a.DEVICE_ID);
+    if(!device || device.CATEGORY_ID !== categoryId) return;
+    const isActive = a.IS_ACTIVE===1;
+    if(isActive) activeCount++;
+    alarmBody.innerHTML+=`<tr>
+      <td>${device.DEVICE_NAME}</td>
+      <td>${a.READING??'-'}</td>
+      <td>${a.ALARM_DATE} ${a.ALARM_TIME}</td>
+      <td><span class="badge ${isActive?'bg-danger':'bg-success'}">${isActive?'Active':'Resolved'}</span></td>
+    </tr>`;
+  });
+  document.getElementById("activeAlarmCount").textContent=activeCount;
+
+  document.getElementById("alarmSearch").addEventListener("keyup",function(){
+    const value=this.value.toLowerCase();
+    Array.from(alarmBody.getElementsByTagName("tr")).forEach(row=>{
+      row.style.display=row.textContent.toLowerCase().includes(value)?"":"none";
+    });
+  });
+}
+
+function backToDashboard(){ showCategoryCards(); }
+
+document.getElementById("organizationSelect").addEventListener("change", e=>loadCentres(e.target.value));
+document.getElementById("centreSelect").addEventListener("change", e=>loadDevices(e.target.value));
+function logout(){ fetch('/logout/').then(()=>window.location='/login/'); }
+
+loadOrganizations();
+</script>
+</body>
+</html>

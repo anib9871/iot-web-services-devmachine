@@ -1,0 +1,181 @@
+[
+  {
+    "model": "iot_api.compassdates",
+    "pk": 1,
+    "fields": {
+      "ORG_ID": 1,
+      "BRANCH_ID": 1,
+      "CMPS_DT": "2025-05-18"
+    }
+  },
+  {
+    "model": "iot_api.compassdates",
+    "pk": 2,
+    "fields": {
+      "ORG_ID": 2,
+      "BRANCH_ID": 1,
+      "CMPS_DT": "2025-05-18"
+    }
+  },
+  {
+    "model": "iot_api.devicealarmlog",
+    "pk": 1,
+    "fields": {
+      "DEVICE_ID": 1,
+      "SENSOR_ID": 1,
+      "PARAMETER_ID": 1,
+      "ALARM_DATE": "2025-01-25",
+      "ALARM_TIME": 91450,
+      "READING": 23,
+      "ORG_ID": 1,
+      "UNIT_ID": 1,
+      "CRT_DT": "2025-01-25",
+      "CRT_BY": 1,
+      "LST_UPD_DT": "2025-01-25",
+      "LST_UPD_BY": 1,
+      "DEVICE_ALARM_LOG_VER": "1",
+      "CHANNEL": 1,
+      "CHANNEL_CD": 20000000
+    }
+  },
+  {
+    "model": "iot_api.devicealarmlog",
+    "pk": 2,
+    "fields": {
+      "DEVICE_ID": 1,
+      "SENSOR_ID": 1,
+      "PARAMETER_ID": 1,
+      "ALARM_DATE": "2025-01-25",
+      "ALARM_TIME": 101742,
+      "READING": 23.15,
+      "ORG_ID": 1,
+      "UNIT_ID": 1,
+      "CRT_DT": "2025-01-25",
+      "CRT_BY": 1,
+      "LST_UPD_DT": "2025-01-25",
+      "LST_UPD_BY": 1,
+      "DEVICE_ALARM_LOG_VER": "1",
+      "CHANNEL": 1,
+      "CHANNEL_CD": 20000000
+    }
+  },
+  {
+    "model": "iot_api.devicealarmlog",
+    "pk": 3,
+    "fields": {
+      "DEVICE_ID": 1,
+      "SENSOR_ID": 1,
+      "PARAMETER_ID": 1,
+      "ALARM_DATE": "2025-05-18",
+      "ALARM_TIME": 94021,
+      "READING": 23.25,
+      "ORG_ID": 1,
+      "UNIT_ID": 1,
+      "CRT_DT": "2025-05-18",
+      "CRT_BY": 1,
+      "LST_UPD_DT": "2025-05-18",
+      "LST_UPD_BY": 1,
+      "DEVICE_ALARM_LOG_VER": "1",
+      "CHANNEL": 1,
+      "CHANNEL_CD": 20000000
+    }
+  },
+  {
+    "model": "iot_api.devicereadinglog",
+    "pk": 1,
+    "fields": {
+      "DEVICE_ID": 1,
+      "SENSOR_ID": 1,
+      "PARAMETER_ID": 1,
+      "READING_DATE": "2025-01-25",
+      "READING_TIME": 0,
+      "READING": 23.15,
+      "ORG_ID": 1,
+      "UNIT_ID": 1,
+      "CRT_DT": "2025-01-25",
+      "CRT_BY": 1,
+      "LST_UPD_DT": "2025-01-25",
+      "LST_UPD_BY": 1,
+      "DEVICE_READING_LOG_VER": "1",
+      "CHANNEL": 1,
+      "CHANNEL_CD": 0
+    }
+  },
+  {
+    "model": "iot_api.devicereadinglog",
+    "pk": 2,
+    "fields": {
+      "DEVICE_ID": 1,
+      "SENSOR_ID": 1,
+      "PARAMETER_ID": 1,
+      "READING_DATE": "2025-01-25",
+      "READING_TIME": 91450,
+      "READING": 23,
+      "ORG_ID": 1,
+      "UNIT_ID": 1,
+      "CRT_DT": "2025-01-25",
+      "CRT_BY": 1,
+      "LST_UPD_DT": "2025-01-25",
+      "LST_UPD_BY": 1,
+      "DEVICE_READING_LOG_VER": "1",
+      "CHANNEL": 1,
+      "CHANNEL_CD": 20000000
+    }
+  },
+  {
+    "model": "iot_api.devicereadinglog",
+    "pk": 3,
+    "fields": {
+      "DEVICE_ID": 1,
+      "SENSOR_ID": 1,
+      "PARAMETER_ID": 1,
+      "READING_DATE": "2025-01-25",
+      "READING_TIME": 95440,
+      "READING": 23.15,
+      "ORG_ID": 1,
+      "UNIT_ID": 1,
+      "CRT_DT": "2025-01-25",
+      "CRT_BY": 1,
+      "LST_UPD_DT": "2025-01-25",
+      "LST_UPD_BY": 1,
+      "DEVICE_READING_LOG_VER": "1",
+      "CHANNEL": 1,
+      "CHANNEL_CD": 20000000
+    }
+  },
+  {
+    "model": "iot_api.masterparameter",
+    "pk": 1,
+    "fields": {
+      "PARAMETER_NAME": "Fridge Temprature",
+      "UPPER_THRESHOLD": 8.5,
+      "LOWER_THRESHOLD": 1.5,
+      "THRESHOLD": 6,
+      "UOM_ID": 1,
+      "PARAMETER_STATUS": 1,
+      "PARAMETER_STATUS_CD": 70000001,
+      "ORG_ID": 1,
+      "UNIT_ID": 1,
+      "CRT_DT": "2025-01-28",
+      "CRT_BY": 1,
+      "LST_UPD_DT": "2025-01-28",
+      "LST_UPD_BY": 1,
+      "MASTER_PARAMETER_VER": "1",
+      "CHANNEL": 2,
+      "CHANNEL_CD": 20000000
+    }
+  },
+  {
+    "model": "iot_api.seuser",
+    "pk": 1,
+    "fields": {
+      "USER_NAME": "Admin",
+      "LOGIN_ID": "admin",
+      "USER_PASSWORD": "admin",
+      "DB_DRIVER": "com.mysql.jdbc.Driver",
+      "DB_URL": "jdbc:mysql://localhost:3306/suzlock",
+      "DB_UNAME": "user91",
+      "DB_PASSWORD": "User91@Pwd"
+    }
+  }
+]
